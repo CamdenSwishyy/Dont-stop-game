@@ -28,6 +28,8 @@ const savedAccounts = JSON.parse(localStorage.getItem(accountKey) || '[]');
 let accounts = Array.isArray(savedAccounts) ? savedAccounts.filter(account => !seededEmails.has(account.email)) : [];
 localStorage.setItem(accountKey, JSON.stringify(accounts));
 let currentEmail = localStorage.getItem(sessionKey) || '';
+const savedPlayer = accounts.find(account => account.email === currentEmail);
+if (savedPlayer) { state.streak = Number(savedPlayer.streak) || 0; state.best = Number(savedPlayer.best ?? savedPlayer.streak) || 0; state.xp = Number(savedPlayer.xp) || 0; state.level = Number(savedPlayer.level) || 0; state.coins = Number(savedPlayer.coins) || state.coins; }
 let boardMode = 'streak';
 const choices = { safe: { xp: 8, chance: .85, label: 'SAFE +8 XP' }, risky: { xp: 18, chance: .70, label: 'RISKY +18 XP' }, insane: { xp: 40, chance: .55, label: 'INSANE +40 XP' } };
 const messages = ['HOW FAR CAN YOU GO?', 'KEEP THAT ENERGY.', 'THE BUTTON HAS CHOSEN YOU.', 'WHY ARE YOU STILL PLAYING?', '99%... DON\'T MESS THIS UP.'];
@@ -76,7 +78,7 @@ function render() {
   const rebirth = $('rebirth-button'); rebirth.disabled = state.level < 50; rebirth.classList.toggle('ready', state.level >= 50); rebirth.textContent = state.level >= 50 ? 'REBIRTH NOW' : 'REBIRTH AT LEVEL 50';
   updateCurrentAccount(); renderLeaderboard();
 }
-function updateCurrentAccount() { const account = accounts.find(item => item.email === currentEmail); if (!account) return; account.streak = state.best; account.level = state.level; account.coins = state.coins; localStorage.setItem(accountKey, JSON.stringify(accounts)); }
+function updateCurrentAccount() { const account = accounts.find(item => item.email === currentEmail); if (!account) return; account.streak = state.streak; account.best = state.best; account.xp = state.xp; account.level = state.level; account.coins = state.coins; localStorage.setItem(accountKey, JSON.stringify(accounts)); }
 function escapeHtml(value) { return value.replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character])); }
 function renderLeaderboardRows(players) {
   const list = $('leaderboard-list');
@@ -104,7 +106,7 @@ function renderLeaderboard() {
 }
 function setAuthError(message) { $('auth-error').textContent = message; }
 function signIn(event) { event.preventDefault(); const email = $('signin-email').value.trim().toLowerCase(); const password = $('signin-password').value; const account = accounts.find(item => item.email === email && item.password === password); if (!account) { setAuthError('Email or password is incorrect.'); return; } currentEmail = email; localStorage.setItem(sessionKey, currentEmail); setAuthError(''); event.target.reset(); showToast(`WELCOME BACK, ${account.name.toUpperCase()}`); render(); }
-function signUp(event) { event.preventDefault(); const email = $('signup-email').value.trim().toLowerCase(); const name = $('signup-name').value.trim(); const password = $('signup-password').value; if (accounts.some(item => item.email === email)) { setAuthError('That email already has an account.'); return; } if (accounts.some(item => item.name.toLowerCase() === name.toLowerCase())) { setAuthError('That display name is already taken.'); return; } const account = { email, name, password, streak: state.best, level: state.level, coins: state.coins }; accounts.push(account); currentEmail = email; localStorage.setItem(accountKey, JSON.stringify(accounts)); localStorage.setItem(sessionKey, currentEmail); setAuthError(''); event.target.reset(); showToast('ACCOUNT CREATED · BOARD UNLOCKED'); render(); }
+ function signUp(event) { event.preventDefault(); const email = $('signup-email').value.trim().toLowerCase(); const name = $('signup-name').value.trim(); const password = $('signup-password').value; if (accounts.some(item => item.email === email)) { setAuthError('That email already has an account.'); return; } if (accounts.some(item => item.name.toLowerCase() === name.toLowerCase())) { setAuthError('That display name is already taken.'); return; } const account = { email, name, password, streak: state.streak, best: state.best, xp: state.xp, level: state.level, coins: state.coins }; accounts.push(account); currentEmail = email; localStorage.setItem(accountKey, JSON.stringify(accounts)); localStorage.setItem(sessionKey, currentEmail); setAuthError(''); event.target.reset(); showToast('ACCOUNT CREATED · BOARD UNLOCKED'); render(); }
 function signOut() { currentEmail = ''; localStorage.removeItem(sessionKey); renderLeaderboard(); showToast('SIGNED OUT'); }
 function play(choiceName) {
   if (Date.now() < cooldownUntil) return;
