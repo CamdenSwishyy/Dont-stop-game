@@ -2,6 +2,7 @@ const state = { streak: 7, coins: 1240, xp: 68, level: 12, best: 28, combo: 3, e
 const accountKey = 'dontStopAccounts';
 const sessionKey = 'dontStopSession';
 const upgradeKey = 'dontStopUpgrades';
+const onlineBoard = window.supabase?.createClient('https://ckvfklamhdfwbykvuyps.supabase.co', 'sb_publishable_MvCKpBgaYoP-RLGGBeIrtw_NObU8z54');
 const dailyKey = 'dontStopDaily';
 const eventTarget = 50000;
 const savedUpgrades = JSON.parse(localStorage.getItem(upgradeKey) || '{}') || {};
@@ -66,10 +67,27 @@ function render() {
 }
 function updateCurrentAccount() { const account = accounts.find(item => item.email === currentEmail); if (!account) return; account.streak = state.best; account.level = state.level; account.coins = state.coins; localStorage.setItem(accountKey, JSON.stringify(accounts)); }
 function escapeHtml(value) { return value.replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character])); }
+function renderLeaderboardRows(players) {
+  const list = $('leaderboard-list');
+  list.innerHTML = players.map((item, index) => { const score = item[boardMode] || 0; const safeName = escapeHtml(item.player_name || item.name); const initials = escapeHtml(safeName.slice(0, 2).toUpperCase()); const isYou = item.player_name === accounts.find(account => account.email === currentEmail)?.name; return `<li class="${isYou ? 'you' : ''}"><span class="rank ${index === 0 ? 'rank-gold' : index === 1 ? 'rank-silver' : index === 2 ? 'rank-bronze' : ''}">${String(index + 1).padStart(2, '0')}</span><span class="leader-avatar ${isYou ? 'you-avatar' : index % 2 ? 'blue' : 'orange'}">${initials}</span><span class="leader-info"><strong>${safeName}${isYou ? ' · you' : ''}</strong><small>${boardMode.toUpperCase()} ${score.toLocaleString()}</small></span><b>${score.toLocaleString()}</b></li>`; }).join('');
+}
+async function syncOnlinePlayer(account) {
+  if (!onlineBoard) return;
+  const player = { player_name: account.name, streak: state.best, level: state.level, coins: state.coins, updated_at: new Date().toISOString() };
+  const { data: existing } = await onlineBoard.from('leaderboard').select('id').eq('player_name', account.name).maybeSingle();
+  if (existing) await onlineBoard.from('leaderboard').update(player).eq('id', existing.id); else await onlineBoard.from('leaderboard').insert(player);
+}
+async function renderOnlineLeaderboard(account) {
+  await syncOnlinePlayer(account);
+  const { data, error } = await onlineBoard.from('leaderboard').select('player_name, streak, level, coins').order(boardMode, { ascending: false }).limit(50);
+  if (error || !data) return renderLeaderboardRows(accounts);
+  renderLeaderboardRows(data);
+}
 function renderLeaderboard() {
   const account = accounts.find(item => item.email === currentEmail); const gate = $('auth-gate'); const content = $('leaderboard-content');
   if (!account) { gate.classList.remove('hidden'); content.classList.add('hidden'); return; }
   gate.classList.add('hidden'); content.classList.remove('hidden'); $('signed-in-name').textContent = account.name;
+  if (onlineBoard) { renderOnlineLeaderboard(account); return; }
   const sorted = [...accounts].sort((a, b) => (b[boardMode] || 0) - (a[boardMode] || 0)); const list = $('leaderboard-list');
   list.innerHTML = sorted.map((item, index) => { const score = item[boardMode] || 0; const safeName = escapeHtml(item.name); const initials = escapeHtml(item.name.slice(0, 2).toUpperCase()); const isYou = item.email === currentEmail; return `<li class="${isYou ? 'you' : ''}"><span class="rank ${index === 0 ? 'rank-gold' : index === 1 ? 'rank-silver' : index === 2 ? 'rank-bronze' : ''}">${String(index + 1).padStart(2, '0')}</span><span class="leader-avatar ${isYou ? 'you-avatar' : index % 2 ? 'blue' : 'orange'}">${initials}</span><span class="leader-info"><strong>${safeName}${isYou ? ' · you' : ''}</strong><small>${boardMode.toUpperCase()} ${score.toLocaleString()}</small></span><b>${score.toLocaleString()}</b></li>`; }).join('');
 }
