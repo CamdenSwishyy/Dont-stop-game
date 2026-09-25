@@ -1,12 +1,10 @@
 const state = { streak: 7, coins: 1240, xp: 68, level: 12, best: 28, combo: 3, eventPoints: 370, shopOwned: false, multiplier: 1 };
 const accountKey = 'dontStopAccounts';
 const sessionKey = 'dontStopSession';
-const demoAccounts = [
-  { email: 'not.jordan@example.com', name: 'not_jordan', password: 'demo-player', streak: 84, level: 22, coins: 18400 },
-  { email: 'crashvault@example.com', name: 'crashvault', password: 'demo-player', streak: 63, level: 19, coins: 12900 },
-  { email: 'stopsign@example.com', name: 'stopsign', password: 'demo-player', streak: 51, level: 16, coins: 9800 }
-];
-let accounts = JSON.parse(localStorage.getItem(accountKey) || 'null') || demoAccounts;
+const seededEmails = new Set(['not.jordan@example.com', 'crashvault@example.com', 'stopsign@example.com']);
+const savedAccounts = JSON.parse(localStorage.getItem(accountKey) || '[]');
+let accounts = Array.isArray(savedAccounts) ? savedAccounts.filter(account => !seededEmails.has(account.email)) : [];
+localStorage.setItem(accountKey, JSON.stringify(accounts));
 let currentEmail = localStorage.getItem(sessionKey) || '';
 let boardMode = 'streak';
 const choices = { safe: { xp: 8, chance: .85, label: 'SAFE +8 XP' }, risky: { xp: 18, chance: .82, label: 'RISKY +18 XP' }, insane: { xp: 40, chance: .55, label: 'INSANE +40 XP' } };
