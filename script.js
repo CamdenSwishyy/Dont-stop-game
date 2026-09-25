@@ -7,7 +7,7 @@ let accounts = Array.isArray(savedAccounts) ? savedAccounts.filter(account => !s
 localStorage.setItem(accountKey, JSON.stringify(accounts));
 let currentEmail = localStorage.getItem(sessionKey) || '';
 let boardMode = 'streak';
-const choices = { safe: { xp: 8, chance: .85, label: 'SAFE +8 XP' }, risky: { xp: 18, chance: .82, label: 'RISKY +18 XP' }, insane: { xp: 40, chance: .55, label: 'INSANE +40 XP' } };
+const choices = { safe: { xp: 8, chance: .85, label: 'SAFE +8 XP' }, risky: { xp: 18, chance: .70, label: 'RISKY +18 XP' }, insane: { xp: 40, chance: .55, label: 'INSANE +40 XP' } };
 const messages = ['HOW FAR CAN YOU GO?', 'KEEP THAT ENERGY.', 'THE BUTTON HAS CHOSEN YOU.', 'WHY ARE YOU STILL PLAYING?', '99%... DON\'T MESS THIS UP.'];
 const $ = id => document.getElementById(id);
 const toast = $('toast');
