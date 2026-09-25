@@ -17,13 +17,15 @@ const $ = id => document.getElementById(id);
 const toast = $('toast');
 let toastTimer;
 function showToast(message, good = true) { toast.textContent = message; toast.style.background = good ? 'var(--lime)' : 'var(--pink)'; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1700); }
+function getLevelTarget() { return 100 + (state.level - 1) * 25; }
 function render() {
+  const levelTarget = getLevelTarget(); const levelProgress = Math.min(state.xp / levelTarget * 100, 100);
   $('coin-count').textContent = state.coins.toLocaleString(); $('streak-number').textContent = String(state.streak).padStart(2, '0');
   $('streak-stat').textContent = state.streak; $('best-stat').textContent = state.best;
   $('combo-count').textContent = `+${state.combo}`; $('cash-value').textContent = `+${Math.max(8, state.streak * 16)}`;
-  $('progress-percent').textContent = `${state.xp}%`; $('progress-fill').style.width = `${state.xp}%`; $('xp-fill').style.width = `${state.xp}%`;
+  $('progress-percent').textContent = `${Math.round(levelProgress)}%`; $('progress-fill').style.width = `${levelProgress}%`; $('xp-fill').style.width = `${levelProgress}%`;
   $('quest-current').textContent = Math.min(state.streak, 15); $('quest-fill').style.width = `${Math.min(state.streak / 15 * 100, 100)}%`;
-  $('level-number').textContent = state.level; $('level-xp').textContent = Math.max(0, 420 - state.xp);
+  $('level-number').textContent = state.level; $('level-xp').textContent = Math.max(0, levelTarget - state.xp);
   $('multiplier').textContent = `x${(1 + state.streak * .1).toFixed(1)}`;
   $('event-points').textContent = state.eventPoints; $('event-fill').style.width = `${Math.min(state.eventPoints / 10, 100)}%`;
   $('mini-quest-progress').textContent = `${Math.min(state.streak, 15)} / 15`; $('coin-quest-progress').textContent = `${Math.min(Math.max(state.coins - 1240, 0), 500)} / 500`;
@@ -54,10 +56,10 @@ function play(choiceName) {
   const success = Math.random() <= choice.chance;
   if (!success) { showToast('STREAK LOST. THAT WAS BRAVE.', false); state.streak = 0; state.combo = 0; state.xp = Math.max(0, state.xp - 12); $('risk-label').textContent = 'The run resets. Start another one.'; $('run-message').textContent = 'TOUCH GRASS.'; render(); return; }
   state.streak += 1; state.combo += 1; state.xp += Math.round(choice.xp * (1 + state.xpBoost * .1)); if (state.streak > state.best) state.best = state.streak;
-  if (state.xp >= 100) { state.xp -= 100; state.level += 1; showToast(`LEVEL ${state.level} UNLOCKED`); } else { showToast(choice.label); }
+  if (state.xp >= getLevelTarget()) { state.xp -= getLevelTarget(); state.level += 1; showToast(`LEVEL ${state.level} UNLOCKED`); } else { showToast(choice.label); }
   $('run-message').textContent = messages[Math.floor(Math.random() * messages.length)]; $('risk-label').textContent = state.streak > 10 ? 'You are officially making questionable choices.' : 'The higher you go, the harder you fall.'; render();
 }
-function cashOut() { if (!state.streak) { showToast('BUILD A STREAK FIRST.', false); return; } const reward = Math.round(Math.max(8, state.streak * 16) * (1 + state.coinBoost * .1)); state.coins += reward; showToast(`BANKED +${reward} COINS`); state.streak = 0; state.combo = 0; state.xp = Math.min(100, state.xp + 6); $('run-message').textContent = 'NICE EXIT. AGAIN?'; $('risk-label').textContent = 'Coins secured. The loop continues.'; render(); }
+function cashOut() { if (!state.streak) { showToast('BUILD A STREAK FIRST.', false); return; } const reward = Math.round(Math.max(8, state.streak * 16) * (1 + state.coinBoost * .1)); state.coins += reward; showToast(`BANKED +${reward} COINS`); state.streak = 0; state.combo = 0; state.xp = Math.min(getLevelTarget(), state.xp + 6); $('run-message').textContent = 'NICE EXIT. AGAIN?'; $('risk-label').textContent = 'Coins secured. The loop continues.'; render(); }
 document.querySelectorAll('.choice').forEach(button => button.addEventListener('click', () => play(button.dataset.choice)));
 $('cash-out').addEventListener('click', cashOut);
 $('signin-form').addEventListener('submit', signIn); $('signup-form').addEventListener('submit', signUp); $('sign-out').addEventListener('click', signOut);
