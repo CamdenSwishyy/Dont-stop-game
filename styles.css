@@ -9,6 +9,8 @@
 .achievement-list li.unlocked strong { color: var(--lime); }
 .login-reward { display: flex; align-items: center; gap: 10px; margin-top: 22px; color: var(--lime); font: 500 22px 'DM Mono', monospace; }
 .login-reward span { color: var(--orange); }
+.login-claim { width: 100%; margin-top: 16px; border: 1px solid var(--lime); background: rgba(200,240,75,.08); color: var(--lime); padding: 10px; font: 9px 'DM Mono', monospace; }
+.login-claim:disabled { cursor: default; opacity: .45; }
 @media (max-width: 1600px) {
 	#game { display: block !important; visibility: visible !important; height: auto !important; max-height: none !important; overflow: visible !important; }
 	#game .game-stage { display: block !important; visibility: visible !important; width: 100% !important; height: auto !important; }
