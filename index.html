@@ -82,6 +82,15 @@
             <button class="auth-submit" type="submit">CREATE &amp; JOIN BOARD <span>→</span></button>
           </form>
           <div class="auth-note"><span class="online-dot"></span> Player accounts · saved on this device</div>
+          <div class="danger-zone hidden" id="danger-zone" aria-live="polite">
+            <div class="eyebrow">DANGER ZONE</div>
+            <label class="danger-field">Password<input id="danger-password" type="password" autocomplete="current-password" placeholder="Enter your password"></label>
+            <div class="danger-actions">
+              <button class="danger-button reset-account" id="reset-account" type="button">RESET ACCOUNT</button>
+              <button class="danger-button delete-account" id="delete-account" type="button">DELETE ACCOUNT</button>
+            </div>
+          </div>
+          <button class="reset-save" id="reset-save" type="button">RESET BOARD &amp; LEVELS</button>
           <div class="auth-error" id="auth-error" role="alert"></div>
         </div>
         <div id="leaderboard-content" class="leaderboard-content hidden">
@@ -104,6 +113,9 @@
       <article class="system-panel login-panel"><div class="eyebrow">DAILY LOGIN</div><h2>KEEP SHOWING UP.</h2><p id="login-reward-copy">Day 1 · Claim today's reward</p><div class="login-reward"><span>✦</span><strong id="login-reward-value">300 ✦</strong></div><button class="login-claim" id="login-claim-button" type="button">CLAIM REWARD</button></article>
       <article class="system-panel rebirth-panel"><div class="eyebrow">PERMANENT PROGRESSION</div><h2>REBIRTH WHEN READY.</h2><p>Reset your run for a permanent <b>+25% reward multiplier</b>.</p><button id="rebirth-button" type="button" disabled>REBIRTH AT LEVEL 50</button></article>
     </section>
+    <div class="account-tools hidden" id="account-tools">
+      <button class="delete-account-bottom" id="delete-account-bottom" type="button">DELETE ACCOUNT</button>
+    </div>
     <footer class="footer-bar"><span>WORLD 01 / THE GRID</span><span>BUILD 0.8.4</span><span class="footer-tip">DON'T STOP. SERIOUSLY.</span></footer>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
