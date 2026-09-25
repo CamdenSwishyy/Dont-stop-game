@@ -2,6 +2,7 @@ const state = { streak: 7, coins: 1240, xp: 68, level: 12, best: 28, combo: 3, e
 const accountKey = 'dontStopAccounts';
 const sessionKey = 'dontStopSession';
 const upgradeKey = 'dontStopUpgrades';
+const eventTarget = 50000;
 const savedUpgrades = JSON.parse(localStorage.getItem(upgradeKey) || '{}') || {};
 state.xpBoost = Number(savedUpgrades.xpBoost) || 0;
 state.coinBoost = Number(savedUpgrades.coinBoost) || 0;
@@ -37,7 +38,7 @@ function render() {
   $('quest-current').textContent = Math.min(state.streak, 15); $('quest-fill').style.width = `${Math.min(state.streak / 15 * 100, 100)}%`;
   $('level-number').textContent = state.level; $('level-xp').textContent = Math.max(0, levelTarget - state.xp);
   $('multiplier').textContent = `x${(1 + state.streak * .1).toFixed(1)}`;
-  $('event-points').textContent = state.eventPoints; $('event-fill').style.width = `${Math.min(state.eventPoints / 10, 100)}%`;
+  $('event-points').textContent = state.eventPoints.toLocaleString(); $('event-fill').style.width = `${Math.min(state.eventPoints / eventTarget * 100, 100)}%`;
   $('mini-quest-progress').textContent = `${Math.min(state.streak, 15)} / 15`; $('coin-quest-progress').textContent = `${Math.min(Math.max(state.coins - 1240, 0), 500)} / 500`;
   $('shop-button').textContent = state.shopOwned ? 'OWNED' : '30,000 ✦'; $('shop-button').disabled = state.shopOwned;
   const xpUpgradeCost = 500 * (state.xpBoost + 1); const coinUpgradeCost = 650 * (state.coinBoost + 1); const cooldownCosts = [20000, 50000, 100000]; const luckUpgradeCost = 650 * (state.luckLevel + 1); const recoveryUpgradeCost = 30000 * (state.recoveryLevel + 1);
@@ -83,7 +84,7 @@ $('cash-out').addEventListener('click', cashOut);
 $('signin-form').addEventListener('submit', signIn); $('signup-form').addEventListener('submit', signUp); $('sign-out').addEventListener('click', signOut);
 document.querySelectorAll('[data-auth-mode]').forEach(button => button.addEventListener('click', () => { const signup = button.dataset.authMode === 'signup'; document.querySelectorAll('[data-auth-mode]').forEach(item => item.classList.toggle('active', item === button)); $('signin-form').classList.toggle('hidden', signup); $('signup-form').classList.toggle('hidden', !signup); setAuthError(''); }));
 document.querySelectorAll('[data-board-mode]').forEach(button => button.addEventListener('click', () => { boardMode = button.dataset.boardMode; document.querySelectorAll('[data-board-mode]').forEach(item => item.classList.toggle('active', item === button)); renderLeaderboard(); }));
-$('event-button').addEventListener('click', () => { state.eventPoints += 25; if (state.eventPoints >= 1000) { state.eventPoints -= 1000; state.coins += 2500; showToast('GLOBAL EVENT COMPLETE +2500'); } else { showToast('CONTRIBUTION LOGGED'); } render(); });
+$('event-button').addEventListener('click', () => { state.eventPoints += 25; if (state.eventPoints >= eventTarget) { state.eventPoints -= eventTarget; state.coins += 2500; showToast('GLOBAL EVENT COMPLETE +2500'); } else { showToast('CONTRIBUTION LOGGED'); } render(); });
 $('shop-button').addEventListener('click', () => { if (state.coins < 30000) { showToast('NOT ENOUGH COINS.', false); return; } state.coins -= 30000; state.shopOwned = true; localStorage.setItem(upgradeKey, JSON.stringify({ xpBoost: state.xpBoost, coinBoost: state.coinBoost, cooldownLevel: state.cooldownLevel, luckLevel: state.luckLevel, recoveryLevel: state.recoveryLevel, shopOwned: state.shopOwned })); showToast('STATIC BLOOM UNLOCKED · +25% REWARDS'); render(); });
  $('xp-upgrade-button').addEventListener('click', () => buyUpgrade('xpBoost', 500, 'XP BOOST')); $('coin-upgrade-button').addEventListener('click', () => buyUpgrade('coinBoost', 650, 'COIN BOOST')); $('cooldown-upgrade-button').addEventListener('click', () => buyUpgrade('cooldownLevel', 0, 'COOLDOWN', [20000, 50000, 100000])); $('luck-upgrade-button').addEventListener('click', () => buyUpgrade('luckLevel', 650, 'LUCK BOOST', null, 20)); $('recovery-upgrade-button').addEventListener('click', () => buyUpgrade('recoveryLevel', 30000, 'RECOVERY CORE'));
 function buyUpgrade(type, baseCost, label, priceList = null, maxLevel = 3, priceStep = baseCost) { const level = state[type]; if (level >= maxLevel) return; const cost = priceList ? priceList[level] : baseCost + level * priceStep; if (state.coins < cost) { showToast('NOT ENOUGH COINS.', false); return; } state.coins -= cost; state[type] += 1; localStorage.setItem(upgradeKey, JSON.stringify({ xpBoost: state.xpBoost, coinBoost: state.coinBoost, cooldownLevel: state.cooldownLevel, luckLevel: state.luckLevel, recoveryLevel: state.recoveryLevel, shopOwned: state.shopOwned })); showToast(`${label} LEVEL ${state[type]} UNLOCKED`); render(); }
