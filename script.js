@@ -1,15 +1,21 @@
-const state = { streak: 7, coins: 1240, xp: 68, level: 12, best: 28, combo: 3, eventPoints: 370, shopOwned: false, multiplier: 1, xpBoost: 0, coinBoost: 0, cooldownLevel: 0, luckLevel: 0, recoveryLevel: 0 };
+const state = { streak: 7, coins: 1240, xp: 68, level: 12, best: 28, combo: 3, eventPoints: 370, shopOwned: false, multiplier: 1, xpBoost: 0, coinBoost: 0, cooldownLevel: 0, luckLevel: 0, recoveryLevel: 0, dailyCoins: 0, successfulMoves: 0, contributions: 0 };
 const accountKey = 'dontStopAccounts';
 const sessionKey = 'dontStopSession';
 const upgradeKey = 'dontStopUpgrades';
+const dailyKey = 'dontStopDaily';
 const eventTarget = 50000;
 const savedUpgrades = JSON.parse(localStorage.getItem(upgradeKey) || '{}') || {};
+const today = new Date().toISOString().slice(0, 10); const savedDailyRecord = JSON.parse(localStorage.getItem(dailyKey) || '{}') || {}; const savedDaily = savedDailyRecord.date === today ? savedDailyRecord : {};
 state.xpBoost = Number(savedUpgrades.xpBoost) || 0;
 state.coinBoost = Number(savedUpgrades.coinBoost) || 0;
 state.cooldownLevel = Number(savedUpgrades.cooldownLevel) || 0;
 state.luckLevel = Number(savedUpgrades.luckLevel) || 0;
 state.recoveryLevel = Number(savedUpgrades.recoveryLevel) || 0;
 state.shopOwned = Boolean(savedUpgrades.shopOwned);
+state.dailyCoins = Number(savedDaily.dailyCoins) || 0;
+state.successfulMoves = Number(savedDaily.successfulMoves) || 0;
+state.contributions = Number(savedDaily.contributions) || 0;
+const claimedQuests = savedDaily.claimedQuests || {};
 const seededEmails = new Set(['not.jordan@example.com', 'crashvault@example.com', 'stopsign@example.com']);
 const savedAccounts = JSON.parse(localStorage.getItem(accountKey) || '[]');
 let accounts = Array.isArray(savedAccounts) ? savedAccounts.filter(account => !seededEmails.has(account.email)) : [];
@@ -29,6 +35,8 @@ function startCooldown(seconds) { cooldownUntil = Date.now() + seconds * 1000; c
 function getCooldownSeconds() { return [15, 10, 5, 2][state.cooldownLevel]; }
 function getChoiceChance(choiceName) { return Math.min(1, choices[choiceName].chance + state.luckLevel * .05); }
 function getLevelTarget() { return 100 + (state.level - 1) * 25; }
+function saveDailyProgress() { localStorage.setItem(dailyKey, JSON.stringify({ date: today, dailyCoins: state.dailyCoins, successfulMoves: state.successfulMoves, contributions: state.contributions, claimedQuests })); }
+function checkDailyQuests() { const quests = [{ id: 'streak', complete: state.streak >= 15, reward: 500, message: 'HOT STREAK COMPLETE · +500 COINS' }, { id: 'coins', complete: state.dailyCoins >= 500, reward: 750, message: 'COIN FLIP COMPLETE · +750 COINS' }, { id: 'moves', complete: state.successfulMoves >= 10, reward: 1000, message: 'MOVE MAKER COMPLETE · +1000 COINS' }, { id: 'event', complete: state.contributions >= 10, reward: 1500, message: 'SERVER BOOSTER COMPLETE · +1500 COINS' }]; quests.forEach(quest => { if (!quest.complete || claimedQuests[quest.id]) return; claimedQuests[quest.id] = true; state.coins += quest.reward; showToast(quest.message); }); saveDailyProgress(); }
 function render() {
   const levelTarget = getLevelTarget(); const levelProgress = Math.min(state.xp / levelTarget * 100, 100);
   $('coin-count').textContent = state.coins.toLocaleString(); $('streak-number').textContent = String(state.streak).padStart(2, '0');
@@ -39,7 +47,7 @@ function render() {
   $('level-number').textContent = state.level; $('level-xp').textContent = Math.max(0, levelTarget - state.xp);
   $('multiplier').textContent = `x${(1 + state.streak * .1).toFixed(1)}`;
   $('event-points').textContent = state.eventPoints.toLocaleString(); $('event-fill').style.width = `${Math.min(state.eventPoints / eventTarget * 100, 100)}%`;
-  $('mini-quest-progress').textContent = `${Math.min(state.streak, 15)} / 15`; $('coin-quest-progress').textContent = `${Math.min(Math.max(state.coins - 1240, 0), 500)} / 500`;
+  $('mini-quest-progress').textContent = `${Math.min(state.streak, 15)} / 15`; $('coin-quest-progress').textContent = `${Math.min(state.dailyCoins, 500)} / 500`; $('move-quest-progress').textContent = `${Math.min(state.successfulMoves, 10)} / 10`; $('event-quest-progress').textContent = `${Math.min(state.contributions, 10)} / 10`;
   $('shop-button').textContent = state.shopOwned ? 'OWNED' : '30,000 ✦'; $('shop-button').disabled = state.shopOwned;
   const xpUpgradeCost = 500 * (state.xpBoost + 1); const coinUpgradeCost = 650 * (state.coinBoost + 1); const cooldownCosts = [20000, 50000, 100000]; const luckUpgradeCost = 650 * (state.luckLevel + 1); const recoveryUpgradeCost = 30000 * (state.recoveryLevel + 1);
   $('xp-upgrade-button').textContent = state.xpBoost >= 3 ? 'MAX' : `${xpUpgradeCost} ✦`; $('xp-upgrade-button').disabled = state.xpBoost >= 3;
@@ -74,17 +82,17 @@ function play(choiceName) {
   const choice = choices[choiceName];
   const success = Math.random() <= getChoiceChance(choiceName);
   if (!success) { const xpLoss = Math.round(12 * (1 - state.recoveryLevel * .25)); showToast('STREAK LOST. THAT WAS BRAVE.', false); state.streak = 0; state.combo = 0; state.xp = Math.max(0, state.xp - xpLoss); $('risk-label').textContent = 'The run resets. Start another one.'; $('run-message').textContent = 'TOUCH GRASS.'; render(); startCooldown(getCooldownSeconds()); return; }
-  state.streak += 1; state.combo += 1; state.xp += Math.round(choice.xp * (1 + state.xpBoost * .1 + (state.shopOwned ? .25 : 0))); if (state.streak > state.best) state.best = state.streak;
+  state.streak += 1; state.combo += 1; state.successfulMoves += 1; state.xp += Math.round(choice.xp * (1 + state.xpBoost * .1 + (state.shopOwned ? .25 : 0))); if (state.streak > state.best) state.best = state.streak;
   if (state.xp >= getLevelTarget()) { state.xp -= getLevelTarget(); state.level += 1; showToast(`LEVEL ${state.level} UNLOCKED`); } else { showToast(choice.label); }
-  $('run-message').textContent = messages[Math.floor(Math.random() * messages.length)]; $('risk-label').textContent = state.streak > 10 ? 'You are officially making questionable choices.' : 'The higher you go, the harder you fall.'; render();
+  $('run-message').textContent = messages[Math.floor(Math.random() * messages.length)]; $('risk-label').textContent = state.streak > 10 ? 'You are officially making questionable choices.' : 'The higher you go, the harder you fall.'; checkDailyQuests(); render();
 }
-function cashOut() { if (!state.streak) { showToast('BUILD A STREAK FIRST.', false); return; } const reward = Math.round(Math.max(8, state.streak * 16) * (1 + state.coinBoost * .1 + (state.shopOwned ? .25 : 0))); state.coins += reward; showToast(`BANKED +${reward} COINS`); state.streak = 0; state.combo = 0; state.xp = Math.min(getLevelTarget(), state.xp + 6); $('run-message').textContent = 'NICE EXIT. AGAIN?'; $('risk-label').textContent = 'Coins secured. The loop continues.'; render(); }
+function cashOut() { if (!state.streak) { showToast('BUILD A STREAK FIRST.', false); return; } const reward = Math.round(Math.max(8, state.streak * 16) * (1 + state.coinBoost * .1 + (state.shopOwned ? .25 : 0))); state.coins += reward; state.dailyCoins += reward; showToast(`BANKED +${reward} COINS`); state.streak = 0; state.combo = 0; state.xp = Math.min(getLevelTarget(), state.xp + 6); $('run-message').textContent = 'NICE EXIT. AGAIN?'; $('risk-label').textContent = 'Coins secured. The loop continues.'; checkDailyQuests(); render(); }
 document.querySelectorAll('.choice').forEach(button => button.addEventListener('click', () => play(button.dataset.choice)));
 $('cash-out').addEventListener('click', cashOut);
 $('signin-form').addEventListener('submit', signIn); $('signup-form').addEventListener('submit', signUp); $('sign-out').addEventListener('click', signOut);
 document.querySelectorAll('[data-auth-mode]').forEach(button => button.addEventListener('click', () => { const signup = button.dataset.authMode === 'signup'; document.querySelectorAll('[data-auth-mode]').forEach(item => item.classList.toggle('active', item === button)); $('signin-form').classList.toggle('hidden', signup); $('signup-form').classList.toggle('hidden', !signup); setAuthError(''); }));
 document.querySelectorAll('[data-board-mode]').forEach(button => button.addEventListener('click', () => { boardMode = button.dataset.boardMode; document.querySelectorAll('[data-board-mode]').forEach(item => item.classList.toggle('active', item === button)); renderLeaderboard(); }));
-$('event-button').addEventListener('click', () => { state.eventPoints += 25; if (state.eventPoints >= eventTarget) { state.eventPoints -= eventTarget; state.coins += 2500; showToast('GLOBAL EVENT COMPLETE +2500'); } else { showToast('CONTRIBUTION LOGGED'); } render(); });
+ $('event-button').addEventListener('click', () => { state.eventPoints += 25; state.contributions += 1; if (state.eventPoints >= eventTarget) { state.eventPoints -= eventTarget; state.coins += 2500; showToast('GLOBAL EVENT COMPLETE +2500'); } else { showToast('CONTRIBUTION LOGGED'); } checkDailyQuests(); render(); });
 $('shop-button').addEventListener('click', () => { if (state.coins < 30000) { showToast('NOT ENOUGH COINS.', false); return; } state.coins -= 30000; state.shopOwned = true; localStorage.setItem(upgradeKey, JSON.stringify({ xpBoost: state.xpBoost, coinBoost: state.coinBoost, cooldownLevel: state.cooldownLevel, luckLevel: state.luckLevel, recoveryLevel: state.recoveryLevel, shopOwned: state.shopOwned })); showToast('STATIC BLOOM UNLOCKED · +25% REWARDS'); render(); });
  $('xp-upgrade-button').addEventListener('click', () => buyUpgrade('xpBoost', 500, 'XP BOOST')); $('coin-upgrade-button').addEventListener('click', () => buyUpgrade('coinBoost', 650, 'COIN BOOST')); $('cooldown-upgrade-button').addEventListener('click', () => buyUpgrade('cooldownLevel', 0, 'COOLDOWN', [20000, 50000, 100000])); $('luck-upgrade-button').addEventListener('click', () => buyUpgrade('luckLevel', 650, 'LUCK BOOST', null, 20)); $('recovery-upgrade-button').addEventListener('click', () => buyUpgrade('recoveryLevel', 30000, 'RECOVERY CORE'));
 function buyUpgrade(type, baseCost, label, priceList = null, maxLevel = 3, priceStep = baseCost) { const level = state[type]; if (level >= maxLevel) return; const cost = priceList ? priceList[level] : baseCost + level * priceStep; if (state.coins < cost) { showToast('NOT ENOUGH COINS.', false); return; } state.coins -= cost; state[type] += 1; localStorage.setItem(upgradeKey, JSON.stringify({ xpBoost: state.xpBoost, coinBoost: state.coinBoost, cooldownLevel: state.cooldownLevel, luckLevel: state.luckLevel, recoveryLevel: state.recoveryLevel, shopOwned: state.shopOwned })); showToast(`${label} LEVEL ${state[type]} UNLOCKED`); render(); }
