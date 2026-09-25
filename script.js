@@ -1,6 +1,10 @@
-const state = { streak: 7, coins: 1240, xp: 68, level: 12, best: 28, combo: 3, eventPoints: 370, shopOwned: false, multiplier: 1 };
+const state = { streak: 7, coins: 1240, xp: 68, level: 12, best: 28, combo: 3, eventPoints: 370, shopOwned: false, multiplier: 1, xpBoost: 0, coinBoost: 0 };
 const accountKey = 'dontStopAccounts';
 const sessionKey = 'dontStopSession';
+const upgradeKey = 'dontStopUpgrades';
+const savedUpgrades = JSON.parse(localStorage.getItem(upgradeKey) || '{}') || {};
+state.xpBoost = Number(savedUpgrades.xpBoost) || 0;
+state.coinBoost = Number(savedUpgrades.coinBoost) || 0;
 const seededEmails = new Set(['not.jordan@example.com', 'crashvault@example.com', 'stopsign@example.com']);
 const savedAccounts = JSON.parse(localStorage.getItem(accountKey) || '[]');
 let accounts = Array.isArray(savedAccounts) ? savedAccounts.filter(account => !seededEmails.has(account.email)) : [];
@@ -24,6 +28,11 @@ function render() {
   $('event-points').textContent = state.eventPoints; $('event-fill').style.width = `${Math.min(state.eventPoints / 10, 100)}%`;
   $('mini-quest-progress').textContent = `${Math.min(state.streak, 15)} / 15`; $('coin-quest-progress').textContent = `${Math.min(Math.max(state.coins - 1240, 0), 500)} / 500`;
   $('shop-button').textContent = state.shopOwned ? 'OWNED' : '500 ✦'; $('shop-button').disabled = state.shopOwned;
+  const xpUpgradeCost = 500 * (state.xpBoost + 1); const coinUpgradeCost = 650 * (state.coinBoost + 1);
+  $('xp-upgrade-button').textContent = state.xpBoost >= 3 ? 'MAX' : `${xpUpgradeCost} ✦`; $('xp-upgrade-button').disabled = state.xpBoost >= 3;
+  $('coin-upgrade-button').textContent = state.coinBoost >= 3 ? 'MAX' : `${coinUpgradeCost} ✦`; $('coin-upgrade-button').disabled = state.coinBoost >= 3;
+  $('xp-upgrade-level').textContent = `Level ${state.xpBoost} · +${state.xpBoost * 10}% XP`;
+  $('coin-upgrade-level').textContent = `Level ${state.coinBoost} · +${state.coinBoost * 10}% coins`;
   const rebirth = $('rebirth-button'); rebirth.disabled = state.level < 50; rebirth.classList.toggle('ready', state.level >= 50); rebirth.textContent = state.level >= 50 ? 'REBIRTH NOW' : 'REBIRTH AT LEVEL 50';
   updateCurrentAccount(); renderLeaderboard();
 }
@@ -44,11 +53,11 @@ function play(choiceName) {
   const choice = choices[choiceName];
   const success = Math.random() <= choice.chance;
   if (!success) { showToast('STREAK LOST. THAT WAS BRAVE.', false); state.streak = 0; state.combo = 0; state.xp = Math.max(0, state.xp - 12); $('risk-label').textContent = 'The run resets. Start another one.'; $('run-message').textContent = 'TOUCH GRASS.'; render(); return; }
-  state.streak += 1; state.combo += 1; state.xp += choice.xp; if (state.streak > state.best) state.best = state.streak;
+  state.streak += 1; state.combo += 1; state.xp += Math.round(choice.xp * (1 + state.xpBoost * .1)); if (state.streak > state.best) state.best = state.streak;
   if (state.xp >= 100) { state.xp -= 100; state.level += 1; showToast(`LEVEL ${state.level} UNLOCKED`); } else { showToast(choice.label); }
   $('run-message').textContent = messages[Math.floor(Math.random() * messages.length)]; $('risk-label').textContent = state.streak > 10 ? 'You are officially making questionable choices.' : 'The higher you go, the harder you fall.'; render();
 }
-function cashOut() { if (!state.streak) { showToast('BUILD A STREAK FIRST.', false); return; } const reward = Math.max(8, state.streak * 16); state.coins += reward; showToast(`BANKED +${reward} COINS`); state.streak = 0; state.combo = 0; state.xp = Math.min(100, state.xp + 6); $('run-message').textContent = 'NICE EXIT. AGAIN?'; $('risk-label').textContent = 'Coins secured. The loop continues.'; render(); }
+function cashOut() { if (!state.streak) { showToast('BUILD A STREAK FIRST.', false); return; } const reward = Math.round(Math.max(8, state.streak * 16) * (1 + state.coinBoost * .1)); state.coins += reward; showToast(`BANKED +${reward} COINS`); state.streak = 0; state.combo = 0; state.xp = Math.min(100, state.xp + 6); $('run-message').textContent = 'NICE EXIT. AGAIN?'; $('risk-label').textContent = 'Coins secured. The loop continues.'; render(); }
 document.querySelectorAll('.choice').forEach(button => button.addEventListener('click', () => play(button.dataset.choice)));
 $('cash-out').addEventListener('click', cashOut);
 $('signin-form').addEventListener('submit', signIn); $('signup-form').addEventListener('submit', signUp); $('sign-out').addEventListener('click', signOut);
@@ -56,6 +65,8 @@ document.querySelectorAll('[data-auth-mode]').forEach(button => button.addEventL
 document.querySelectorAll('[data-board-mode]').forEach(button => button.addEventListener('click', () => { boardMode = button.dataset.boardMode; document.querySelectorAll('[data-board-mode]').forEach(item => item.classList.toggle('active', item === button)); renderLeaderboard(); }));
 $('event-button').addEventListener('click', () => { state.eventPoints += 25; if (state.eventPoints >= 1000) { state.eventPoints -= 1000; state.coins += 2500; showToast('GLOBAL EVENT COMPLETE +2500'); } else { showToast('CONTRIBUTION LOGGED'); } render(); });
 $('shop-button').addEventListener('click', () => { if (state.coins < 500) { showToast('NOT ENOUGH COINS.', false); return; } state.coins -= 500; state.shopOwned = true; showToast('STATIC BLOOM UNLOCKED'); render(); });
+$('xp-upgrade-button').addEventListener('click', () => buyUpgrade('xpBoost', 500, 'XP BOOST')); $('coin-upgrade-button').addEventListener('click', () => buyUpgrade('coinBoost', 650, 'COIN BOOST'));
+function buyUpgrade(type, baseCost, label) { const level = state[type]; if (level >= 3) return; const cost = baseCost * (level + 1); if (state.coins < cost) { showToast('NOT ENOUGH COINS.', false); return; } state.coins -= cost; state[type] += 1; localStorage.setItem(upgradeKey, JSON.stringify({ xpBoost: state.xpBoost, coinBoost: state.coinBoost })); showToast(`${label} LEVEL ${state[type]} UNLOCKED`); render(); }
 $('rebirth-button').addEventListener('click', () => { if (state.level < 50) return; state.level = 1; state.xp = 0; state.streak = 0; state.combo = 0; state.multiplier += .25; showToast(`REBIRTH COMPLETE · x${state.multiplier.toFixed(2)}`); render(); });
 document.addEventListener('keydown', event => { if (event.key === '1') play('safe'); if (event.key === '2') play('risky'); if (event.key === '3') play('insane'); if (event.key.toLowerCase() === 'c') cashOut(); });
 render();
