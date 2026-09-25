@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#09151c" />
+  <title>DON'T STOP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#game" aria-label="Don't Stop home"><span class="brand-mark">DS</span><span>DON'T STOP</span></a>
+      <nav class="top-actions" aria-label="Player status">
+        <div class="coin-pill"><span class="coin-icon">✦</span><span id="coin-count">1,240</span></div>
+        <button class="avatar-button" type="button" aria-label="Open profile">KM</button>
+      </nav>
+    </header>
+
+    <main class="main-grid" id="game">
+      <aside class="sidebar left-panel">
+        <div class="eyebrow">RUN STATUS</div>
+        <div class="level-card">
+          <div class="level-orbit"><span id="level-number">12</span><small>LVL</small></div>
+          <div class="level-copy"><strong>RISK TAKER</strong><span>Next level in <b id="level-xp">420</b> XP</span></div>
+        </div>
+        <div class="xp-bar"><span id="xp-fill"></span></div>
+        <div class="stat-list">
+          <div><span>Current streak</span><strong id="streak-stat">7</strong></div>
+          <div><span>Best streak</span><strong id="best-stat">28</strong></div>
+          <div><span>Total rebirths</span><strong>03</strong></div>
+        </div>
+        <div class="sidebar-rule"></div>
+        <div class="eyebrow">DAILY QUEST</div>
+        <div class="quest-copy"><strong>KEEP IT GOING</strong><span>Reach a streak of 15</span></div>
+        <div class="quest-progress"><span id="quest-fill"></span></div>
+        <div class="quest-meta"><span><b id="quest-current">7</b> / 15</span><span>+250 ✦</span></div>
+        <div class="sidebar-bottom"><span class="online-dot"></span> 2,481 players refusing to stop</div>
+      </aside>
+
+      <section class="game-stage">
+        <div class="stage-heading">
+          <div><span class="eyebrow accent">LIVE RUN <i></i></span><h1 id="run-message">HOW FAR CAN YOU GO?</h1><p>Pick a lane. Keep the streak alive.</p></div>
+          <div class="mode-chip"><span class="pulse"></span> FEVER MODE <strong>1.5x</strong></div>
+        </div>
+
+        <div class="run-card">
+          <div class="run-topline"><span>STREAK</span><span class="run-multiplier" id="multiplier">x1.7</span></div>
+          <div class="streak-number" id="streak-number">07</div>
+          <div class="combo-line"><span class="combo-gem">◆</span> <span id="combo-text">NICE COMBO</span> <span class="combo-count" id="combo-count">+3</span></div>
+          <div class="progress-wrap"><div class="progress-label"><span>RUN PROGRESS</span><span id="progress-percent">68%</span></div><div class="progress-track"><span id="progress-fill"></span><i class="checkpoint" style="left: 25%"></i><i class="checkpoint" style="left: 50%"></i><i class="checkpoint" style="left: 75%"></i></div></div>
+          <div class="danger-line"><span class="danger-dot"></span><span id="risk-label">The higher you go, the harder you fall.</span></div>
+        </div>
+
+        <div class="choice-label"><span>WHAT'S YOUR MOVE?</span><span class="hotkey-hint">1 / 2 / 3 TO SELECT</span></div>
+        <div class="choices">
+          <button class="choice safe" data-choice="safe" type="button"><span class="choice-key">1</span><span class="choice-name">SAFE</span><span class="choice-detail">+8 XP</span><span class="choice-arrow">↗</span></button>
+          <button class="choice risky" data-choice="risky" type="button"><span class="choice-key">2</span><span class="choice-name">RISKY</span><span class="choice-detail">+18 XP · 82%</span><span class="choice-arrow">↗</span></button>
+          <button class="choice insane" data-choice="insane" type="button"><span class="choice-key">3</span><span class="choice-name">INSANE</span><span class="choice-detail">+40 XP · 55%</span><span class="choice-arrow">↗</span></button>
+        </div>
+        <button class="cash-out" id="cash-out" type="button"><span>✦</span> CASH OUT <b id="cash-value">+112</b><small>OR KEEP PUSHING</small></button>
+      </section>
+
+      <aside class="sidebar right-panel">
+        <div id="auth-gate" class="auth-gate">
+          <div class="eyebrow">PLAYER ACCESS</div>
+          <h2>SIGN IN TO THE BOARD.</h2>
+          <p>Your run can stay private. Your records need an account.</p>
+          <div class="auth-switch"><button class="active" data-auth-mode="signin" type="button">SIGN IN</button><button data-auth-mode="signup" type="button">CREATE ACCOUNT</button></div>
+          <form id="signin-form" class="auth-form">
+            <label>Email<input id="signin-email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+            <label>Password<input id="signin-password" type="password" autocomplete="current-password" required placeholder="Your password"></label>
+            <button class="auth-submit" type="submit">UNLOCK LEADERBOARD <span>→</span></button>
+          </form>
+          <form id="signup-form" class="auth-form hidden">
+            <label>Email<input id="signup-email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+            <label>Display name<input id="signup-name" type="text" maxlength="18" autocomplete="nickname" required placeholder="risk_taker"></label>
+            <label>Password<input id="signup-password" type="password" minlength="6" autocomplete="new-password" required placeholder="6+ characters"></label>
+            <button class="auth-submit" type="submit">CREATE &amp; JOIN BOARD <span>→</span></button>
+          </form>
+          <div class="auth-note"><span class="online-dot"></span> Local prototype · accounts stay on this device</div>
+          <div class="auth-error" id="auth-error" role="alert"></div>
+        </div>
+        <div id="leaderboard-content" class="leaderboard-content hidden">
+          <div class="eyebrow">TODAY'S BOARD <span class="live-tag">SIGNED IN</span></div>
+          <div class="signed-in-row"><span>Playing as <strong id="signed-in-name">you</strong></span><button id="sign-out" type="button">SIGN OUT</button></div>
+          <div class="board-tabs"><button class="active" data-board-mode="streak" type="button">STREAK</button><button data-board-mode="level" type="button">LEVEL</button><button data-board-mode="coins" type="button">COINS</button></div>
+          <ol class="leaderboard" id="leaderboard-list"></ol>
+          <div class="sidebar-rule"></div>
+          <div class="eyebrow">RECENT UNLOCK</div>
+          <div class="unlock-item"><div class="unlock-art">✹</div><div><strong>STATIC BLOOM</strong><span>Effect · Uncommon</span></div><span class="new-label">NEW</span></div>
+          <button class="collection-button" type="button">VIEW COLLECTION <span>→</span></button>
+        </div>
+      </aside>
+    </main>
+    <section class="systems-grid" aria-label="Progression systems">
+      <article class="system-panel event-panel"><div class="eyebrow">GLOBAL CHAOS EVENT <span class="live-tag">LIVE</span></div><h2>MAKE THE SERVER LOUDER.</h2><p>Contribute run points to unlock a shared coin drop.</p><div class="event-track"><span id="event-fill"></span></div><div class="event-meta"><span><b id="event-points">370</b> / 1,000 points</span><button id="event-button" type="button">CONTRIBUTE +25</button></div></article>
+      <article class="system-panel"><div class="eyebrow">DAILY QUESTS</div><h2>THINGS TO CHASE.</h2><div class="mini-quest"><span class="quest-icon">◆</span><div><strong>HOT STREAK</strong><small>Reach 15 in one run</small></div><b id="mini-quest-progress">7 / 15</b></div><div class="mini-quest"><span class="quest-icon orange-icon">✦</span><div><strong>COIN FLIP</strong><small>Earn 500 coins today</small></div><b id="coin-quest-progress">0 / 500</b></div></article>
+      <article class="system-panel shop-panel"><div class="eyebrow">THE FLEX SHOP</div><h2>BUY SOMETHING LOUD.</h2><div class="shop-row"><div class="shop-art">✹</div><div><strong>STATIC BLOOM</strong><small>Effect · Rare</small></div><button id="shop-button" type="button">500 ✦</button></div></article>
+      <article class="system-panel rebirth-panel"><div class="eyebrow">PERMANENT PROGRESSION</div><h2>REBIRTH WHEN READY.</h2><p>Reset your run for a permanent <b>+25% reward multiplier</b>.</p><button id="rebirth-button" type="button" disabled>REBIRTH AT LEVEL 50</button></article>
+    </section>
+    <footer class="footer-bar"><span>WORLD 01 / THE GRID</span><span>BUILD 0.8.4</span><span class="footer-tip">DON'T STOP. SERIOUSLY.</span></footer>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>
