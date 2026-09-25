@@ -1,4 +1,22 @@
 * { box-sizing: border-box; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; }
+@media (max-width: 900px) and (min-width: 701px) {
+	.app-shell { padding: 0 24px; }
+	.main-grid { grid-template-columns: minmax(170px, 0.34fr) minmax(0, 1fr); gap: 24px; }
+	.right-panel { grid-column: 1 / -1; grid-row: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+	.right-panel .sidebar-rule, .right-panel .unlock-item, .right-panel .collection-button { display: none; }
+	.systems-grid { grid-template-columns: repeat(2, 1fr); }
+	.event-panel { grid-column: span 2; }
+	.run-card { padding-left: 28px; padding-right: 28px; }
+	.choice { min-height: 122px; padding: 14px 12px; }
+}
+@media (pointer: coarse) {
+	button, input { min-height: 44px; }
+	.choice { min-height: 128px; }
+}
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
 :root { --bg: #09151c; --panel: #0d1d25; --panel-light: #122731; --line: #263a42; --muted: #78909a; --text: #e9f2ef; --lime: #c8f04b; --orange: #ff8a4c; --pink: #ff5874; --cyan: #59d6d2; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; min-height: 100vh; background-image: linear-gradient(135deg, rgba(89,214,210,.03), transparent 35%), linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px); background-size: auto, 48px 48px, 48px 48px; }
