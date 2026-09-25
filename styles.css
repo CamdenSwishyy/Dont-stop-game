@@ -2,10 +2,9 @@
 @media (max-width: 900px) {
 	html, body { overflow-x: hidden; }
 	.app-shell { padding: 0 14px !important; }
-	.main-grid { display: flex !important; flex-direction: column !important; position: relative !important; min-height: 620px !important; padding: 20px 0 28px !important; gap: 24px !important; }
-	.game-stage { display: block !important; visibility: visible !important; order: 1 !important; width: 100% !important; }
-	.left-panel { order: 2 !important; }
-	.right-panel { order: 3 !important; }
+	.main-grid { display: block !important; position: relative !important; min-height: 620px !important; padding: 20px 0 28px !important; }
+	.game-stage { display: block !important; visibility: visible !important; width: 100% !important; margin: 0 0 24px !important; }
+	.left-panel, .right-panel { display: block !important; margin-bottom: 24px !important; }
 	.stage-heading { margin-bottom: 20px !important; }
 	.stage-heading h1 { font-size: 26px !important; }
 	.run-card { min-height: 0 !important; padding: 20px 16px 18px !important; }
