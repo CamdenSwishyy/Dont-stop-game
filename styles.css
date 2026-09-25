@@ -1,4 +1,18 @@
 * { box-sizing: border-box; }
+@media (max-width: 900px) {
+	html, body { overflow-x: hidden; }
+	.app-shell { padding: 0 14px !important; }
+	.main-grid { padding: 20px 0 28px !important; gap: 24px !important; }
+	.stage-heading { margin-bottom: 20px !important; }
+	.stage-heading h1 { font-size: 26px !important; }
+	.run-card { min-height: 0 !important; padding: 20px 16px 18px !important; }
+	.streak-number { font-size: 82px !important; margin: 18px 0 8px !important; }
+	.progress-wrap { margin-top: 20px !important; }
+	.danger-line { margin-top: 15px !important; }
+	.choice { min-height: 88px !important; padding: 10px !important; }
+	.choice-key { margin-bottom: 8px !important; }
+	.cash-out { min-height: 42px !important; }
+}
 #auth-gate.hidden { display: none; }
 .choice:disabled { cursor: not-allowed; opacity: .55; transform: none; }
 button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; }
