@@ -1,4 +1,8 @@
 * { box-sizing: border-box; }
+@media (max-width: 1600px) {
+	#game { display: block !important; visibility: visible !important; height: auto !important; max-height: none !important; overflow: visible !important; }
+	#game .game-stage { display: block !important; visibility: visible !important; width: 100% !important; height: auto !important; }
+}
 @media (max-width: 900px) {
 	html, body { overflow-x: hidden; }
 	.app-shell { padding: 0 14px !important; }
