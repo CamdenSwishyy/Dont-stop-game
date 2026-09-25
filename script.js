@@ -98,4 +98,6 @@ $('shop-button').addEventListener('click', () => { if (state.coins < 30000) { sh
 function buyUpgrade(type, baseCost, label, priceList = null, maxLevel = 3, priceStep = baseCost) { const level = state[type]; if (level >= maxLevel) return; const cost = priceList ? priceList[level] : baseCost + level * priceStep; if (state.coins < cost) { showToast('NOT ENOUGH COINS.', false); return; } state.coins -= cost; state[type] += 1; localStorage.setItem(upgradeKey, JSON.stringify({ xpBoost: state.xpBoost, coinBoost: state.coinBoost, cooldownLevel: state.cooldownLevel, luckLevel: state.luckLevel, recoveryLevel: state.recoveryLevel, shopOwned: state.shopOwned })); showToast(`${label} LEVEL ${state[type]} UNLOCKED`); render(); }
 $('rebirth-button').addEventListener('click', () => { if (state.level < 50) return; state.level = 1; state.xp = 0; state.streak = 0; state.combo = 0; state.multiplier += .25; showToast(`REBIRTH COMPLETE · x${state.multiplier.toFixed(2)}`); render(); });
 document.addEventListener('keydown', event => { if (event.key === '1') play('safe'); if (event.key === '2') play('risky'); if (event.key === '3') play('insane'); if (event.key.toLowerCase() === 'c') cashOut(); });
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
 render();
