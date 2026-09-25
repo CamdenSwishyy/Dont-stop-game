@@ -26,6 +26,8 @@ let loginStreak = Number(savedLogin.streak) || 0;
 const seededEmails = new Set(['not.jordan@example.com', 'crashvault@example.com', 'stopsign@example.com']);
 const savedAccounts = JSON.parse(localStorage.getItem(accountKey) || '[]');
 let accounts = Array.isArray(savedAccounts) ? savedAccounts.filter(account => !seededEmails.has(account.email)) : [];
+const zeroStateMigrationKey = 'dontStopZeroStateMigration';
+if (!localStorage.getItem(zeroStateMigrationKey)) { accounts = accounts.map(account => ({ ...account, streak: 0, best: 0, xp: 0, level: 0 })); localStorage.setItem(zeroStateMigrationKey, '1'); }
 localStorage.setItem(accountKey, JSON.stringify(accounts));
 let currentEmail = localStorage.getItem(sessionKey) || '';
 const savedPlayer = accounts.find(account => account.email === currentEmail);
